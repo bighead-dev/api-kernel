@@ -1,4 +1,3 @@
-api-kernel
-==========
+# Kern
 
-Simple core classes for implementing bighead apis
+Kern stands for Kernel, and it is the underlying classes that make up the API.
