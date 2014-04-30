@@ -87,6 +87,12 @@ class Router
 		return $valid;
     }
     
+    public static function is_api_url($uri)
+    {
+        $path = parse_url($req->uri)['path'];
+        return strpos($path, '/api') === 0);
+    }
+    
     public function create_request($uri = '', $req_method = '', $data = null)
     {    
 		$req = new Request($uri, $req_method, $data);
