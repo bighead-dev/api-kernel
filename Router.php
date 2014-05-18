@@ -5,8 +5,7 @@ namespace Kern;
 class Router
 {
     public static $rtr  = null;
-    
-    public static DEFAULT_METHOD = 'index';
+    const DEFAULT_METHOD = 'index';
     
     private function __construct()
     {
@@ -26,7 +25,7 @@ class Router
         $class  = '';
         $method = '';
         $path   = parse_url($req->uri)['path'];
-        
+
         /* get the path after the actual script name if there is one */
         $idx = strrpos($path, '.php');
         $idx = $idx === false ? 0 : $idx + 4; /* plus 4 because it's after the .php */
@@ -50,7 +49,7 @@ class Router
         $class = str_replace(
             ['-', ' '],
             ['_', '\\'],
-            ucwords(str_replace('/', ' ', $uri))
+            ucwords(str_replace('/', ' ', $path))
         );
         
         /* make sure the class starts with a \ */
@@ -73,29 +72,30 @@ class Router
     {
         $valid = false;
         $erp = error_reporting(E_ALL & (~E_NOTICE & ~E_WARNING));
-
+        
 		if (
-		    strlen($this->class) &&
-		    strlen($this->method) &&
-		    class_exists($this->class) &&
-		    method_exists($this->class, $this->method)
+		    strlen($class) &&
+		    strlen($method) &&
+		    class_exists($class) &&
+		    method_exists($class, $method)
 		   ) {
 			$valid = true;
 		}
 		
 		error_reporting($erp);
+		
 		return $valid;
     }
     
     public static function is_api_url($uri)
     {
-        $path = parse_url($req->uri)['path'];
-        return strpos($path, '/api') === 0);
+        $path = parse_url($uri)['path'];
+        return strpos($path, '/apiv2') === 0;
     }
     
-    public function create_request($uri = '', $req_method = '', $data = null)
-    {    
-		$req = new Request($uri, $req_method, $data);
+    private function _create_request($uri = '', $req_method = '', $data = null)
+    {
+        $req = new Request($uri, $req_method, $data);
 		
 		$class; $method;
 		$res = $this->parse_uri_from_request($req, $class, $method);
@@ -112,4 +112,10 @@ class Router
         		
 		return $req;
     }
+    
+    public static function create_request($uri = '', $req_method = '', $data = null)
+    {    
+		return self::instance()->_create_request($uri, $req_method, $data);
+    }
 }
+

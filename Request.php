@@ -68,16 +68,16 @@ class Request
         switch ($type)
         {
             case 'GET':
-                $this->req_type = self::REQ_GET;
+                $this->req_type = self::GET;
                 break;
             case 'POST':
-                $this->req_type = self::REQ_POST;
+                $this->req_type = self::POST;
                 break;
             case 'PUT':
-                $this->req_type = self::REQ_PUT;
+                $this->req_type = self::PUT;
                 break;
             case 'DELETE':
-                $this->req_type = self::REQ_DELETE;
+                $this->req_type = self::DELETE;
                 break;
             default:
                 throw new Exception('invalid request method');
@@ -108,8 +108,10 @@ class Request
                 $this->data = $_GET;
                 return;
             case self::POST:
-                if ($this->is_json_req() == false) {
+                if (!$this->is_json_req())
+                {
                     $this->data = $_POST;
+                    return;
                 }
             case self::DELETE:
             case self::PUT:
@@ -120,8 +122,21 @@ class Request
                 }
                 
                 /* todo - properly validate */
-                $this->data = json_decode(file_get_contents("php://input"));
+                $this->data = json_decode(file_get_contents("php://input"), true);
         }
+    }
+    
+    public function is_post() {
+        return $this->req_type === self::POST;
+    }
+    public function is_get() {
+        return $this->req_type === self::GET;
+    }
+    public function is_put() {
+        return $this->req_type === self::PUT;
+    }
+    public function is_delete() {
+        return $this->req_type === self::DELETE;
     }
     
     public function set_route($class, $method)
@@ -136,7 +151,7 @@ class Request
             return $this->is_json_req;
         }
         
-        $ct = $_SERVER['CONTENT_TYPE'];
+        $ct = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
         $this->is_json_req = strpos($ct, 'json') !== false;
         return $this->is_json_req;
     }

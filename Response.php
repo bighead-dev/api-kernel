@@ -12,6 +12,24 @@ class Response
     public $data   = [];
     public $type   = self::TYPE_JSON;
     
+    /*
+     * Construct a new response in error or success
+     * Succesful responses are populated with nothing or
+     * an array of data.
+     * Error responses are populated with an error string
+     */
+    public function __construct($data = null, $is_error = false)
+    {
+        if ($is_error == 'err') {
+            return $this->error($data);
+        }
+    
+        if (is_null($data)) {
+            return;
+        }
+        
+        $this->data = $data;
+    }
     
     public function set_type($type)
     {
@@ -23,7 +41,8 @@ class Response
         return json_encode(
             [
                 'resp_status'    => $this->status,
-            ] + $this->data;
+            ] + $this->data,
+            JSON_PRETTY_PRINT
         );
     }
     
@@ -46,7 +65,7 @@ class Response
                 header('Content-type: application/json');
                 return $this->to_json();
             default:
-                throw new Exception('Request has an unkown type.');
+                throw new Exception('Response has an unkown type.');
         }
     }
 }

@@ -1,16 +1,14 @@
 <?php
 
-use Kern;
-
 function kern_make_request($endpoint, $req_method, $data = [])
 {
-    $req = Router::create_request($endpoint, $req_method, $data);
+    $req = Kern\Router::create_request($endpoint, $req_method, $data);
     
     if (!$req) {
         return false;
     }
     
-    return Dispatcher::dispatch($req);
+    return Kern\Dispatcher::dispatch($req);
 }
 
 /*
@@ -19,18 +17,18 @@ function kern_make_request($endpoint, $req_method, $data = [])
  */
 function kern_api_entry_point()
 {
-    if (!Router::is_api_url($_SERVER['REQUEST_URI'])) {
+    if (!Kern\Router::is_api_url($_SERVER['REQUEST_URI'])) {
         return;
     }
 
     $resp = kern_make_request($_SERVER['REQUEST_URI'], '', null);
     
     if (!$resp) {
-        $resp = new Response();
-        $resp->error("Invalid endpoint: '" . $uri . "'");
+        $resp = new Kern\Response();
+        $resp->error("Invalid endpoint: '" . $_SERVER['REQUEST_URI'] . "'");
     }
     
-    if ($resp instanceof Response == false) {
+    if ($resp instanceof Kern\Response == false) {
         throw new Exception('An invalid response was returned from the API');
     }
     
