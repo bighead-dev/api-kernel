@@ -1,16 +1,13 @@
 <?php
 
-namespace Kern;
+namespace Kern\Response;
 
-class Response
+class JsonResponse
 {
-    const TYPE_JSON = 1;
-
     public $status = [
         'success' => true,
     ];
     public $data   = [];
-    public $type   = self::TYPE_JSON;
     
     /*
      * Construct a new response in error or success
@@ -29,11 +26,6 @@ class Response
         }
         
         $this->data = $data;
-    }
-    
-    public function set_type($type)
-    {
-        $this->type = $type;
     }
     
     public function to_json()
@@ -59,13 +51,7 @@ class Response
     
     public function __toString()
     {
-        switch ($this->type)
-        {
-            case self::TYPE_JSON:
-                header('Content-type: application/json');
-                return $this->to_json();
-            default:
-                throw new Exception('Response has an unkown type.');
-        }
+        header('Content-type: application/json');
+        return $this->to_json();
     }
 }

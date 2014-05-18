@@ -20,22 +20,20 @@ class Dispatcher
     }
         
     public static function dispatch(Request $req)
-    {
-        $resp = new Response();
-            
-        $class = $req->class;
+    {            
+        $class = $req->route->class;
         $model = new $class($req);
 
         if ($model instanceof Model == false) {
             return false;
         }
         
-        $res = $model->{$req->method}($resp);
+        $res = $model->{$req->route->method}($resp);
         
         if ($res) {
-            $resp = $res;
+            return $res;
         }
         
-        return $resp;
+        return null;
     }
 }

@@ -4,8 +4,7 @@ namespace Kern;
 
 class Request
 {
-    public $class;
-    public $method;
+    public $route;
     public $uri;
     
     const DELETE = 1;
@@ -22,22 +21,6 @@ class Request
     
     public function __construct($uri = '', $req_method = '', $data = null)
     {
-        $this->uri = $uri;
-        $this->class = str_replace(
-            ['-', ' '],
-            ['_', '\\'],
-            ucwords(str_replace('/', ' ', $uri))
-        );
-		
-		if (($pos = strpos($this->class, '.')))
-		{
-			$this->method = str_replace('-', '_', substr($this->class, $pos + 1));
-			$this->class = substr($this->class, 0, $pos);
-		}
-		else {
-			$this->method = self::DEFAULT_METHOD; /* default */
-		}
-		
 		$this->set_uri($uri);
 		$this->set_request_type($req_method);
 		$this->set_req_data($data);
@@ -139,10 +122,9 @@ class Request
         return $this->req_type === self::DELETE;
     }
     
-    public function set_route($class, $method)
+    public function set_route(Route $route)
     {
-        $this->class    = $class;
-        $this->method   = $method;
+        $this->route = $route;
     }
     
     public function is_json_req()
