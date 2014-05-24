@@ -6,6 +6,7 @@ class Request
 {
     public $route;
     public $uri;
+    public $path;
     
     const DELETE = 1;
 	const PUT    = 2;
@@ -71,6 +72,14 @@ class Request
     public function set_uri($uri)
     {
         $this->uri = ($uri) ?: $_SERVER['REQUEST_URI'];
+        
+        $path = parse_url($this->uri)['path'];
+
+        /* get the path after the actual script name if there is one */
+        $idx = strrpos($path, '.php');
+        $idx = $idx === false ? 0 : $idx + 4; /* plus 4 because it's after the .php */
+        
+        $this->path = substr($path, $idx);
     }
     
     protected function get_request_method()

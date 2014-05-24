@@ -43,7 +43,7 @@ class Route
         $this->method = self::DEFAULT_METHOD;
         
         if ($this->val instanceof Closure) {
-            list($this->class, $this->method) = $this->val($this, $req);
+            list($this->class, $this->method) = $this->val->__invoke($this, $req);
         }
         else if (is_string($this->val)) {
             $this->get_class_and_method_from_string($this->class, $this->method);
@@ -147,17 +147,9 @@ class Router
     }
         
     public function get_route_from_request(Request $req)
-    {        
-        $path   = parse_url($req->uri)['path'];
-
-        /* get the path after the actual script name if there is one */
-        $idx = strrpos($path, '.php');
-        $idx = $idx === false ? 0 : $idx + 4; /* plus 4 because it's after the .php */
-        
-        $path = substr($path, $idx);
-        
+    {
         /* check the simple routes first */
-        if (array_key_exists($path, $this->simple_routes)) {
+        if (array_key_exists($req->path, $this->simple_routes)) {
             return $this->simple_routes[$path];
         }
         
@@ -165,7 +157,7 @@ class Router
         foreach ($this->regex_routes as $route)
         {
             $matches = [];
-            if (preg_match('@' . preg_quote($route->key, '@') . '@', $path, $matches))
+            if (preg_match('@' . $route->key . '@', $req->path, $matches))
             {
                 $route->matches = $matches;
                 return $route;
@@ -173,11 +165,6 @@ class Router
         }
         
         return $this->route_not_found_handler->__invoke($req);
-    }
-    
-    public function is_endpoint_valid($class, $method)
-    {
-        
     }
     
     public function add_route(Route $route)

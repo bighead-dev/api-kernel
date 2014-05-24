@@ -73,8 +73,5 @@ class Bootstrap
         $this->run_callback('routes');
         
         $this->run_callback('startup');
-        
-        /* make a request */
-        echo kern_make_request('', '', null);
     }
 }

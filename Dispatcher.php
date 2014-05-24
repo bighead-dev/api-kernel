@@ -28,7 +28,7 @@ class Dispatcher
             throw new Exception("Request is not an instance of Routable");
         }
         
-        $model->setRequest($req);
+        $model->set_request($req);
         
         $res = $model->{$req->route->method}();
         

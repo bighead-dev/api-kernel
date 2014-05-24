@@ -61,10 +61,10 @@ class Config
         switch ($ext)
         {
             case 'ini':
-                $cfg->data[$cfg_file] = parse_ini_file(self::$cfg_path . $env . $cfg_file . '.ini', true);
+                $cfg->data[$cfg_file] = parse_ini_file(self::$cfg_path .'/'. $env . $cfg_file . '.ini', true);
                 break;
             case 'php':
-                $cfg->data[$cfg_file] = require(self::$cfg_path . $env . $cfg_file . '.php');
+                $cfg->data[$cfg_file] = require(self::$cfg_path . '/' . $env . $cfg_file . '.php');
         }
         
         
