@@ -19,6 +19,6 @@ class HtmlResponse
     
     public function __toString()
     {
-        echo $data;
+        return $this->data;
     }
 }

@@ -14,6 +14,7 @@ class Request
     
     public $req_type;
     public $data;
+    public $raw_input;
     
     private $is_json_req;
     
@@ -105,7 +106,7 @@ class Request
                 }
                 
                 /* todo - properly validate */
-                $this->data = json_decode(file_get_contents("php://input"), true);
+                $this->data = json_decode($this->get_raw_input(), true);
         }
     }
     
@@ -136,5 +137,15 @@ class Request
         $ct = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
         $this->is_json_req = strpos($ct, 'json') !== false;
         return $this->is_json_req;
+    }
+    
+    public function get_raw_input()
+    {
+        if ($this->raw_input != null) {
+            return $this->raw_input;
+        }
+        
+        $this->raw_input = file_get_contents("php://input");
+        return $this->raw_input;
     }
 }

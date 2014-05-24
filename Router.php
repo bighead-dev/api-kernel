@@ -3,7 +3,10 @@
 namespace Kern;
 
 use Closure;
-use Util;
+
+interface Routable {
+    public function set_request(Request $req);
+}
 
 class Route
 {
@@ -14,10 +17,14 @@ class Route
     public $type;
     public $key;
     public $val;
+    public $matches;
     
     public $class;
     public $method;
-        
+    
+    /*
+     * Two types of routes, simple and regex.
+     */
     public function __construct($key, $val, $type = self::SIMPLE)
     {
         $this->key  = $key;
@@ -25,7 +32,7 @@ class Route
         $this->type = $type;
     }
     
-    public is_simple()
+    public function is_simple()
     {
         return $this->type & self::SIMPLE;
     }
@@ -36,7 +43,7 @@ class Route
         $this->method = self::DEFAULT_METHOD;
         
         if ($this->val instanceof Closure) {
-            $this->val($req, $this->class, $this->method);
+            list($this->class, $this->method) = $this->val($this, $req);
         }
         else if (is_string($this->val)) {
             $this->get_class_and_method_from_string($this->class, $this->method);
@@ -61,7 +68,7 @@ class Route
             $path   = substr($this->val, 0, $period_idx);
         }
     
-        $class = Util\String::convert_slahes_to_ns_class($path);
+        $class = self::convert_slashes_to_ns_class($path);
                 
         /* replace dashes with underscores */
         if ($method) {
@@ -100,6 +107,17 @@ class Route
 		
 		return $valid;
     }
+    
+    public static function convert_slashes_to_ns_class($str)
+    {
+        $str = str_replace(
+            ['-', ' '],
+            ['_', '\\'],
+            ucwords(str_replace('/', ' ', $str))
+        );
+        
+        return '\\' . ltrim($str, '\\');
+    }
 }
 
 class Router
@@ -110,14 +128,14 @@ class Router
     protected $simple_routes = [];
     protected $regex_routes  = [];
     
-    public $route_not_found_handler = function(Request $req)
-    {
-        throw new Exception('Route not found for this request: ' . print_r($req, true));
-    };
+    public $route_not_found_handler = null;
     
     private function __construct()
     {
-       
+        $this->route_not_found_handler = function(Request $req)
+        {
+            throw new Exception('Route not found for this request: ' . print_r($req, true));
+        };
     }
     
     public static function instance()
@@ -146,12 +164,15 @@ class Router
         /* check the regex routes */
         foreach ($this->regex_routes as $route)
         {
-            if (preg_match('@' . preg_quote($route->key, '@') . '@', $path)) {
+            $matches = [];
+            if (preg_match('@' . preg_quote($route->key, '@') . '@', $path, $matches))
+            {
+                $route->matches = $matches;
                 return $route;
             }
         }
         
-        return $this->route_not_found_handler();
+        return $this->route_not_found_handler->__invoke($req);
     }
     
     public function is_endpoint_valid($class, $method)
@@ -173,17 +194,16 @@ class Router
     {
         $req = new Request($uri, $req_method, $data);
 		
-		$class; $method;
-		$route = $this->get_route_from_request($req, $class, $method);
+		$route = $this->get_route_from_request($req);
         
-        if (!$res || $route instanceof Route == false) {
+        if (!$route || $route instanceof Route == false) {
             throw new Exception("Invalid route supplied");
         }
         
         $route->set_class_and_method_from_request($req);
         
         if (!$route->is_valid()) {
-            return false;
+            throw new Exception("Route does not point to a valid class.method: " .print_r($route, true));
         }
         
         $req->set_route($route);

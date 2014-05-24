@@ -22,13 +22,15 @@ class Dispatcher
     public static function dispatch(Request $req)
     {            
         $class = $req->route->class;
-        $model = new $class($req);
+        $model = new $class();
 
-        if ($model instanceof Model == false) {
-            return false;
+        if ($model instanceof Routable == false) {
+            throw new Exception("Request is not an instance of Routable");
         }
         
-        $res = $model->{$req->route->method}($resp);
+        $model->setRequest($req);
+        
+        $res = $model->{$req->route->method}();
         
         if ($res) {
             return $res;
