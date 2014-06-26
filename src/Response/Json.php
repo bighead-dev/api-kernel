@@ -4,7 +4,7 @@ namespace Kern\Response;
 
 use Kern\iResponse;
 
-class JsonResponse implements iResponse
+class Json implements iResponse
 {
     public $status = [
         'success' => true,

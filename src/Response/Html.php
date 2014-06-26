@@ -2,7 +2,9 @@
 
 namespace Kern\Response;
 
-class HtmlResponse
+use Kern\iResponse;
+
+class Html implements iResponse
 {
     public $data;
     

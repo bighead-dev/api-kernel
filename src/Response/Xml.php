@@ -5,7 +5,7 @@ namespace Kern\Response;
 use SimpleXMLElement;
 use Kern\iResponse;
 
-class XmlResponse implements iResponse
+class Xml implements iResponse
 {
     public $status = [
         'success' => true,
