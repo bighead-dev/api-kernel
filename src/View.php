@@ -6,11 +6,21 @@ class View
 {
     public static $cfg;
     
-    public $view_file  = '';
-    public $view_data  = [];
-    public $view_ouput = '';
+    public $view_file       = '';
+    public $view_data       = [];
+    public $view_ouput      = '';
+    public $view_children   = [];
     
     public $parent = null;
+    
+    public function __construct(View $parent = null)
+    {
+        if (!self::$cfg) {
+            throw new Exception('Config for Kern\View has not been set');
+        }
+    
+        $this->parent = $parent;
+    }
     
     public static function setCfg($cfg)
     {
@@ -29,6 +39,11 @@ class View
     {
         $this->parent = $parent;
         return $this;
+    }
+    public function add_child(View $child)
+    {
+        $this->view_children[] = $child;
+        $child->set_parent($this);
     }
     
     public function setFile($file)
@@ -121,7 +136,7 @@ class View
         $cls = get_called_class();
         $v = new $cls();
         
-        return $v->set_file($file)->set_data($v)->render();
+        return $v->set_file($file)->set_data($data)->render();
     }
     
     

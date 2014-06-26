@@ -32,8 +32,11 @@ class Dispatcher
         
         $res = $model->{$req->route->method}();
         
-        if ($res) {
+        if ($res && $res instanceof iResponse) {
             return $res;
+        }
+        else if ($res) {
+            throw new Exception("Response is not an instance of iResponse");
         }
         
         return null;

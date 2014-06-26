@@ -22,6 +22,8 @@ class Loader implements iLoader
 	 */
 	protected $inc_path;
 	
+	protected $class_map;
+	
 	/**
 	 * The base namespace to grab classes from
 	 */
@@ -29,11 +31,18 @@ class Loader implements iLoader
 	
 	private $package_len;
 	
-	public function __construct($package = '', $inc_path = '')
+	public function __construct($package = '', $param = '')
 	{
 		$this->package = $package;
 		$this->package_len = strlen($package);
-		$this->inc_path = $inc_path;
+
+		/* param can either be a class map or an include path */
+		if (is_array($param)) {
+		    $this->class_map = $param;
+		}
+		else {
+            $this->inc_path = $param;
+    	}
 	}
 	
 	/**
@@ -56,14 +65,23 @@ class Loader implements iLoader
 		$file  = '';
 		$namespace = '';
 		
+		
 		/*
 		 * If we have a package path, then we can just validate the class
 		 * by checking the package/ns prefix.
 		 * If we don't have a package, then we have to make sure the file
 		 * exists before requiring. file_exists is pretty slow because of the
 		 * system calls.
+		 * Class maps are super simple and efficient, so always default to
+		 * class map first
 		 */
-		if ($this->package)
+		if ($this->class_map) {
+		    if (!array_key_exists($class, $this->class_map)) {
+		        return;
+		    }
+		    $path = $this->class_map[$class];
+		}
+		else if ($this->package)
 		{		
 			// let's make sure we are in the right namespace
 			if (strpos($class, $this->package) !== 0)

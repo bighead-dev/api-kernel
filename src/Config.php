@@ -4,13 +4,8 @@ namespace Kern;
 
 class Config
 {
-    const ENV_DEV   = 'dev';
-    const ENV_STG   = 'stg';
-    const ENV_PRD   = 'prd';
-
     public static $cfg = null;
     public static $cfg_path = './application/config';
-    public static $env = '';
 
     public $data;
     
@@ -38,15 +33,24 @@ class Config
     {
         self::$cfg_path = $cfg_path;
     }
-    
-    public static function setEnv($env)
+        
+    private static function get_cfg_file_path($file, $ext)
     {
-        self::set_env($env);
-    }
-    
-    public static function set_env($env)
-    {
-        self::$env = $env;
+        /* first check for an environment specific config file */
+        $file_path = self::$cfg_path . '/' . kern_env() . '/' . $file . '.' . $ext;
+        
+        if (file_exists($file_path)) {
+            return $file_path;
+        }
+        
+        /* now, check for environment-agnostic config */
+        $file_path = self::$cfg_path . '/' . $file . '.' . $ext;
+        
+        if (!file_exists($file_path)) {
+            throw new Exception("No config file for $file found...");
+        }
+        
+        return $file_path;
     }
     
     public static function get($cfg_file = 'cfg', $ext = 'ini')
@@ -56,15 +60,15 @@ class Config
         if (isset($cfg->data[$cfg_file]))
             return $cfg->data[$cfg_file];
         
-        $env = (self::$env) ? self::$env . '/' : '';
+        $file_path = self::get_cfg_file_path($cfg_file, $ext);
         
         switch ($ext)
         {
             case 'ini':
-                $cfg->data[$cfg_file] = parse_ini_file(self::$cfg_path .'/'. $env . $cfg_file . '.ini', true);
+                $cfg->data[$cfg_file] = parse_ini_file($file_path, true);
                 break;
             case 'php':
-                $cfg->data[$cfg_file] = require(self::$cfg_path . '/' . $env . $cfg_file . '.php');
+                $cfg->data[$cfg_file] = require($file_path);
         }
         
         

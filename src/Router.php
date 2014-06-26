@@ -177,9 +177,9 @@ class Router
         }
     }
     
-    private function _create_request($uri = '', $req_method = '', $data = null)
+    private function _create_request($uri = '', $req_method = '', $data = null, $headers = null)
     {
-        $req = new Request($uri, $req_method, $data);
+        $req = new Request($uri, $req_method, $data, $headers);
 		
 		$route = $this->get_route_from_request($req);
         
@@ -198,9 +198,9 @@ class Router
 		return $req;
     }
     
-    public static function create_request($uri = '', $req_method = '', $data = null)
+    public static function create_request($uri = '', $req_method = '', $data = null, $headers = null)
     {    
-		return self::instance()->_create_request($uri, $req_method, $data);
+		return self::instance()->_create_request($uri, $req_method, $data, $headers);
     }
 }
 

@@ -8,22 +8,25 @@ class Request
     public $uri;
     public $path;
     
-    const DELETE = 1;
-	const PUT    = 2;
-	const POST   = 4;
-	const GET    = 8;
+    const DELETE    = 0x1;
+	const PUT       = 0x2;
+	const POST      = 0x4;
+	const GET       = 0x8;
+	const PATCH     = 0x10;
     
     public $req_type;
     public $data;
+    public $headers;
     public $raw_input;
     
     private $is_json_req;
     
     const DEFAULT_METHOD = 'index';
     
-    public function __construct($uri = '', $req_method = '', $data = null)
+    public function __construct($uri = '', $req_method = '', $data = null, $headers = null)
     {
 		$this->set_uri($uri);
+		$this->set_headers($headers);
 		$this->set_request_type($req_method);
 		$this->set_req_data($data);
     }
@@ -64,6 +67,9 @@ class Request
             case 'DELETE':
                 $this->req_type = self::DELETE;
                 break;
+            case 'PATCH';
+                $this->req_type = self::PATCH;
+                break;
             default:
                 throw new Exception('invalid request method');
         }        
@@ -84,7 +90,13 @@ class Request
     
     protected function get_request_method()
     {
-        return $_SERVER['REQUEST_METHOD'];
+        $method = $this->get_header('X-HTTP-Method-Override');
+        
+        if (!$method) {
+            $method = $_SERVER['REQUEST_METHOD'];
+        }
+        
+        return $method;
     }
     
     protected function set_req_data($data)
@@ -119,6 +131,24 @@ class Request
         }
     }
     
+    public function set_headers($headers)
+    {
+        $default_headers = [];
+        
+        if (function_exists('apache_request_headers')) {
+            $default_headers = apache_request_headers();
+        }
+        
+        if ($headers) {
+            $headers += $default_headers;
+        }
+        else {
+            $headers = $default_headers;
+        }
+        
+        $this->headers = $headers;
+    }
+    
     public function is_post() {
         return $this->req_type === self::POST;
     }
@@ -143,9 +173,28 @@ class Request
             return $this->is_json_req;
         }
         
-        $ct = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
+        $ct = isset($this->headers['Content-Type']) ? $this->headers['Content-Type'] : '';
         $this->is_json_req = strpos($ct, 'json') !== false;
         return $this->is_json_req;
+    }
+    
+    /* retrieve from the data array */
+    public function get($field)
+    {
+        if (!array_key_exists($field, $this->data)) {
+            return null;
+        }
+        
+        return $this->data[$field];
+    }
+    
+    public function get_header($key)
+    {
+        if (!array_key_exists($key, $this->headers)) {
+            return null;
+        }
+        
+        return $this->headers[$key];
     }
     
     public function get_raw_input()
