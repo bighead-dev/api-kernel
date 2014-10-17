@@ -139,13 +139,12 @@ class View
         return $v->set_file($file)->set_data($data)->render();
     }
     
-    
     public static function renderResponse($file, $data = [])
     {
         return self::render_response($file, $data);
     }
     public static function render_response($file, $data = [])
     {
-        return new Kern\Response\HtmlResponse(static::renderFile($file, $data));
+        return new Kern\Response\Html(static::renderFile($file, $data));
     }
 }
