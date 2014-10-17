@@ -1,5 +1,7 @@
 # Kern Orm
 
+**Disclaimer** - This documentation is old, and the ORM has been worked on much more than this, so this documentation shouldn't be regarded as very useful for now
+
 The Kern Orm is an idea in the making that will allow any plain old php object to be saved to a database. I haven't fully thought through all of the details, but the main issue is that an Application model and the database are kind of two different things. So this would be an elegant way to separate application logic from the database abstraction layer. So instead of combing database models with application models, those would be separate.
 
 My idea would be that there would be a group of interfaces like Db_serializable and so on, that allow the ORM to save, update, get, and delete plain objects.
